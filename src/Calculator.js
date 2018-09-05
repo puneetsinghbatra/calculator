@@ -9,7 +9,7 @@ export default class Calculator extends Component
     state ={
           result:0,
           _:0,
-          current:0 
+          current:'' 
 
      }
 
@@ -22,52 +22,89 @@ export default class Calculator extends Component
      } 
 
 
- validkey(e)
+ validkey(key)
   {
+  
     var reg = new  RegExp('^[0-9+*\-/._]$');
-    if(reg.test(e.key))
+    if(reg.test(key)) 
     {
        return true;
       
     }
-    return false;  
-   
+     return false
   }
 
 
  /***** evaluate result*****/    
  evaluatedata(event)
  {
-         
-     	 console.log("It is the valid key");
-     	 if(event.key=='=' || event.key=='enter')
+
+ 	    if(!this.validkey(event.key))
+ 	    {
+ 	    	 console.log(event.key);
+             event.preventDefault(); 
+
+ 	    }
+          
+     	 if(event.key=='=' || event.key=='Enter' || event.key=='enter')   
      	 {
-              let reformval = eval(event.target.textContent);  
-              this.setState({_:reformval,current:reformval}); 
+     	 	   event.preventDefault();
+     	 	  let textcontent  = this.replaceUnderScore(event.target.textContent,'_');
+            
 
-     	 } 
+              let reformval    = eval(textcontent); 
+              /*****Checkif result  comes infinity****/
+              if(reformval=='Infinity')
+              {
+                    console.log('result comes in infinity cannot be considered');
+                    this.setState({_:0,current:0}); 
+              }
+              else
+              {
+                  this.setState({_:reformval,current:reformval}); 
 
+              }
+              
+
+     	 }  
  }
-
+ 
  addvalueorsymbols(e)
  {
-      if(e.target.textContent=='=' || e.target.textContent)
+ 	   
+      if(e.target.textContent=='=' )
       {
-         let reformval = eval(e.target.textContent); 
-         this.setState({_:reformval,current:reformval});   
+      	  e.preventDefault();
+         let reformval = eval(this.state.current); 
+         this.setState({_:0,current:reformval});   
+      }
+      else if(e.target.textContent=='_')
+      {
+          
+      	this.setState({current:this.replaceUnderScore(this.state.current+e.target.textContent,'_')});
+
       }
       else
-      {
+      { 
+        
       	this.setState({current:this.state.current+e.target.textContent});
       }
          
  }
 
+ replaceUnderScore(textContent,symbol)
+ {
+   
+    return textContent.replace(symbol, this.state._);
+ }
+
+
+
    render()
    {
       return(<div id="calculator" role="application">
-					<div className="top">
-						<div className="screen" aria-labelledby="displayScreen" onKeyPress={this.validkey} onKeyDown={this.evaluatedata}   contentEditable="true">{this.state.current}</div>
+					<div className="top" >
+						<div className="screen" suppressContentEditableWarning={true} aria-labelledby="displayScreen" onKeyDown={this.evaluatedata}   contentEditable="true">{this.state.current}</div>
 					</div>
 					
 					<div className="keys" aria-labelledby="inputKeys">
@@ -90,9 +127,5 @@ export default class Calculator extends Component
 					</div> 
 				</div>);
    }
-
-	
-
-
 
 }
